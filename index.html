@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capline Healthcare – Keyword Position Tracker</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; color: #1a1a2e; }
+
+header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+  color: white; padding: 20px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.logo-area { display: flex; align-items: center; gap: 14px; }
+.logo-circle {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, #e94560, #0f3460);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 17px; color: white;
+}
+.brand h1 { font-size: 17px; font-weight: 700; }
+.brand p { font-size: 11px; color: #a0aec0; margin-top: 2px; }
+.header-right { text-align: right; font-size: 11px; color: #a0aec0; }
+.header-right span { display: block; color: #e2e8f0; margin-top: 3px; font-size: 12px; }
+
+/* Stats bar */
+.stats-bar {
+  background: white; border-bottom: 1px solid #e2e8f0;
+  padding: 14px 32px; display: flex; gap: 32px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; }
+.stat-label { font-size: 10px; color: #718096; text-transform: uppercase; letter-spacing: 0.8px; }
+.stat-value { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-top: 2px; }
+
+/* Date range bar */
+.date-bar {
+  background: white; border-bottom: 1px solid #e2e8f0;
+  padding: 14px 32px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.date-bar label { font-size: 12px; font-weight: 600; color: #4a5568; }
+.preset-btn {
+  padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px;
+  font-size: 12px; cursor: pointer; background: white; color: #4a5568;
+  transition: all 0.15s;
+}
+.preset-btn:hover { border-color: #667eea; color: #667eea; }
+.preset-btn.active { background: #667eea; color: white; border-color: #667eea; }
+.date-sep { color: #a0aec0; font-size: 12px; }
+input[type="date"] {
+  padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;
+  font-size: 12px; color: #2d3748; outline: none;
+}
+input[type="date"]:focus { border-color: #667eea; }
+.update-btn {
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: opacity 0.2s; margin-left: 8px;
+}
+.update-btn:hover { opacity: 0.9; }
+.update-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.update-btn .spinner {
+  width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white; border-radius: 50%;
+  animation: spin 0.7s linear infinite; display: none;
+}
+.update-btn.loading .spinner { display: block; }
+.update-btn.loading .btn-icon { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status-msg {
+  font-size: 11px; padding: 4px 10px; border-radius: 4px;
+  display: none;
+}
+.status-msg.success { background: #c6f6d5; color: #276749; display: inline-block; }
+.status-msg.error { background: #fed7d7; color: #c53030; display: inline-block; }
+
+/* Container */
+.container { padding: 20px 32px; }
+
+/* Controls */
+.controls { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.search-box {
+  padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 8px;
+  font-size: 13px; width: 260px; outline: none; background: white;
+}
+.search-box:focus { border-color: #667eea; }
+.filter-btn {
+  padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 7px;
+  font-size: 11px; cursor: pointer; background: white; color: #4a5568; transition: all 0.15s;
+}
+.filter-btn:hover, .filter-btn.active { background: #667eea; color: white; border-color: #667eea; }
+.results-count { margin-left: auto; font-size: 11px; color: #718096; }
+
+/* Legend */
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; font-size: 11px; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+/* Table */
+.table-wrapper {
+  background: white; border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow-x: auto;
+}
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead { background: #f7fafc; }
+th {
+  padding: 11px 14px; text-align: left; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.7px; color: #718096;
+  border-bottom: 2px solid #edf2f7; cursor: pointer; white-space: nowrap;
+}
+th:hover { color: #667eea; }
+th.sorted { color: #667eea; }
+.week-sub { display: block; font-size: 9px; font-weight: 400; color: #a0aec0; margin-top: 2px; }
+td {
+  padding: 10px 14px; border-bottom: 1px solid #f0f4f8; vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f7fafc; }
+
+.kw-cell { font-weight: 500; color: #2d3748; max-width: 240px; }
+
+.pos-badge {
+  display: inline-block; padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; min-width: 44px; text-align: center;
+}
+.pos-top3   { background:#c6f6d5; color:#22543d; }
+.pos-top10  { background:#bee3f8; color:#2a4365; }
+.pos-top20  { background:#e9d8fd; color:#44337a; }
+.pos-top50  { background:#fefcbf; color:#744210; }
+.pos-top100 { background:#fed7d7; color:#742a2a; }
+.pos-none   { background:#edf2f7; color:#a0aec0; font-size:10px; font-weight:400; }
+
+.trend {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px;
+}
+.trend-up   { background:#c6f6d5; color:#276749; }
+.trend-down { background:#fed7d7; color:#c53030; }
+.trend-flat { background:#edf2f7; color:#718096; }
+
+.cat-badge {
+  display: inline-block; padding: 2px 7px; border-radius: 4px;
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.cat-billing      { background:#ebf4ff; color:#2b6cb0; }
+.cat-credentialing{ background:#f0fff4; color:#276749; }
+.cat-rcm          { background:#faf5ff; color:#553c9a; }
+.cat-denial       { background:#fff5f5; color:#c53030; }
+.cat-eligibility  { background:#fffaf0; color:#c05621; }
+.cat-dental       { background:#e6fffa; color:#234e52; }
+.cat-digital      { background:#fefcbf; color:#744210; }
+.cat-local        { background:#f7fafc;  color:#718096; }
+
+.no-data-row td { text-align:center; padding:40px; color:#a0aec0; }
+
+/* Loading overlay */
+.loading-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(255,255,255,0.7); z-index: 99;
+  align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+}
+.loading-overlay.show { display: flex; }
+.loading-spinner {
+  width: 40px; height: 40px; border: 3px solid #e2e8f0;
+  border-top-color: #667eea; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-text { font-size: 14px; color: #4a5568; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Fetching rankings from Search Console…</div>
+</div>
+
+<header>
+  <div class="logo-area">
+    <div class="logo-circle">C</div>
+    <div class="brand">
+      <h1>Capline Healthcare Management</h1>
+      <p>SEO Keyword Position Tracker · Week over Week</p>
+    </div>
+  </div>
+  <div class="header-right">
+    Data Source
+    <span id="headerRange">Google Search Console</span>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat"><span class="stat-label">Total Keywords</span><span class="stat-value" id="statTotal">92</span></div>
+  <div class="stat"><span class="stat-label">Top 10</span><span class="stat-value" id="statTop10" style="color:#2b6cb0">—</span></div>
+  <div class="stat"><span class="stat-label">Top 20</span><span class="stat-value" id="statTop20" style="color:#553c9a">—</span></div>
+  <div class="stat"><span class="stat-label">Improved</span><span class="stat-value" id="statImproved" style="color:#38a169">—</span></div>
+  <div class="stat"><span class="stat-label">Declined</span><span class="stat-value" id="statDeclined" style="color:#e53e3e">—</span></div>
+  <div class="stat"><span class="stat-label">No Data</span><span class="stat-value" id="statNoData" style="color:#a0aec0">—</span></div>
+  <div class="stat"><span class="stat-label">Last Updated</span><span class="stat-value" id="statUpdated" style="font-size:13px;margin-top:6px;color:#718096">—</span></div>
+</div>
+
+<!-- Date Range Bar -->
+<div class="date-bar">
+  <label>Date Range:</label>
+  <button class="preset-btn" onclick="applyPreset(28, this)">Last 4 Weeks</button>
+  <button class="preset-btn active" onclick="applyPreset(56, this)">Last 8 Weeks</button>
+  <button class="preset-btn" onclick="applyPreset(84, this)">Last 3 Months</button>
+  <span class="date-sep">|  Custom:</span>
+  <input type="date" id="startDate">
+  <span class="date-sep">→</span>
+  <input type="date" id="endDate">
+  <button class="update-btn" id="updateBtn" onclick="fetchRankings()">
+    <span class="btn-icon">🔄</span>
+    <div class="spinner"></div>
+    Update Rankings
+  </button>
+  <span class="status-msg" id="statusMsg"></span>
+</div>
+
+<!-- Table area -->
+<div class="container">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#22543d"></div> Top 3</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2a4365"></div> Top 10</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#44337a"></div> Top 20</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#744210"></div> Top 50</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#742a2a"></div> Top 100</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div> No data</div>
+    <div class="legend-item" style="margin-left:8px"><span class="trend trend-up">↑</span> Position improved</div>
+    <div class="legend-item"><span class="trend trend-down">↓</span> Position declined</div>
+  </div>
+
+  <div class="controls">
+    <input type="text" class="search-box" id="searchBox" placeholder="🔍  Search keywords…" oninput="renderTable()">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('billing',this)">Billing</button>
+    <button class="filter-btn" onclick="setFilter('credentialing',this)">Credentialing</button>
+    <button class="filter-btn" onclick="setFilter('rcm',this)">RCM</button>
+    <button class="filter-btn" onclick="setFilter('denial',this)">Denial</button>
+    <button class="filter-btn" onclick="setFilter('eligibility',this)">Eligibility</button>
+    <button class="filter-btn" onclick="setFilter('dental',this)">Dental</button>
+    <button class="filter-btn" onclick="setFilter('local',this)">Local</button>
+    <span class="results-count" id="resultsCount"></span>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ── Keyword definitions ──────────────────────────────────────────────────────
+const KEYWORDS = [
+  { kw: 'Medical Billing and Collection', cat: 'billing' },
+  { kw: 'Medical Credentialing Companies', cat: 'credentialing' },
+  { kw: 'Patient Eligibility Verification Services', cat: 'eligibility' },
+  { kw: 'Credentialing Specialist', cat: 'credentialing' },
+  { kw: 'Medical Credentialing', cat: 'credentialing' },
+  { kw: 'Insurance Verification Specialist', cat: 'eligibility' },
+  { kw: 'Patient Insurance Verification', cat: 'eligibility' },
+  { kw: 'Medical Billing Company', cat: 'billing' },
+  { kw: 'Medical Billing', cat: 'billing' },
+  { kw: 'RCM in Medical Billing', cat: 'rcm' },
+  { kw: 'RCM Cycle in Medical Billing', cat: 'rcm' },
+  { kw: 'Provider Credentialing', cat: 'credentialing' },
+  { kw: 'Patient Eligibility Verification', cat: 'eligibility' },
+  { kw: 'Medical Billing and Credentialing Services', cat: 'billing' },
+  { kw: 'Medical Credentialing Services', cat: 'credentialing' },
+  { kw: 'Medical Credentialing Specialist', cat: 'credentialing' },
+  { kw: 'Patient Eligibility Verification Company', cat: 'eligibility' },
+  { kw: 'Medical Coding Services', cat: 'billing' },
+  { kw: 'Denial Management Facility', cat: 'denial' },
+  { kw: 'Revenue Cycle Management Company', cat: 'rcm' },
+  { kw: 'Revenue Cycle Management Services', cat: 'rcm' },
+  { kw: 'Healthcare RCM Services', cat: 'rcm' },
+  { kw: 'Medical Revenue Cycle Management Services', cat: 'rcm' },
+  { kw: 'RCM Services', cat: 'rcm' },
+  { kw: 'Healthcare Revenue Cycle Management Company', cat: 'rcm' },
+  { kw: 'Healthcare Revenue Cycle Management Services', cat: 'rcm' },
+  { kw: 'Denial Management Services', cat: 'denial' },
+  { kw: 'Denial Management Solutions', cat: 'denial' },
+  { kw: 'Denial Management Companies', cat: 'denial' },
+  { kw: 'Healthcare Denial Management Company', cat: 'denial' },
+  { kw: 'Outsourced Medical Billing Services', cat: 'billing' },
+  { kw: 'Medical Billing Services', cat: 'billing' },
+  { kw: 'Medical Billing Services Company', cat: 'billing' },
+  { kw: 'Medical Billing and Collection Services', cat: 'billing' },
+  { kw: 'Medical Billing and Collection Company', cat: 'billing' },
+  { kw: 'Medical Billing Credentialing Services Company', cat: 'billing' },
+  { kw: 'Health Insurance Credentialing Specialist', cat: 'credentialing' },
+  { kw: 'Insurance Credentialing Company', cat: 'credentialing' },
+  { kw: 'Medical Insurance Eligibility Verification Services', cat: 'eligibility' },
+  { kw: 'Medical Insurance Verification Company', cat: 'eligibility' },
+  { kw: 'Insurance Verification Services', cat: 'eligibility' },
+  { kw: 'Patient Insurance Eligibility Verification', cat: 'eligibility' },
+  { kw: 'Healthcare Digital Marketing', cat: 'digital' },
+  { kw: 'Healthcare Internet Marketing Services', cat: 'digital' },
+  { kw: 'Healthcare Digital Marketing Company', cat: 'digital' },
+  { kw: 'Healthcare Digital Marketing Services', cat: 'digital' },
+  { kw: 'Dental Billing Company', cat: 'dental' },
+  { kw: 'Dental Billing Services', cat: 'dental' },
+  { kw: 'Dental Insurance Billing Company', cat: 'dental' },
+  { kw: 'Dental Billing Outsourcing', cat: 'dental' },
+  { kw: 'Outsource Dental Billing', cat: 'dental' },
+  { kw: 'Dental Billing Experts', cat: 'dental' },
+  { kw: 'Dental Billing Solutions', cat: 'dental' },
+  { kw: 'Dental Billing and Collection Services', cat: 'dental' },
+  { kw: 'Medical Billing and Collection Services in Texas', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Texas', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Texas', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Texas', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in Florida', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Florida', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Florida', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Florida', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in California', cat: 'local' },
+  { kw: 'Medical Credentialing Services in California', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in California', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in California', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in Washington', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Washington', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Washington', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Washington', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in Rhode Island', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Rhode Island', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Rhode Island', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Rhode Island', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in Alabama', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Alabama', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Alabama', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Alabama', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in Alaska', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Alaska', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Alaska', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Alaska', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in Oregon', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Oregon', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Oregon', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Oregon', cat: 'local' },
+  { kw: 'Medical Billing and Collection Services in Vermont', cat: 'local' },
+  { kw: 'Medical Credentialing Services in Vermont', cat: 'local' },
+  { kw: 'Medical Insurance Verification Services in Vermont', cat: 'local' },
+  { kw: 'Revenue Cycle Management Services in Vermont', cat: 'local' },
+  { kw: 'Medical Coding Solutions', cat: 'billing' },
+  { kw: 'Healthcare Medical Coding Services', cat: 'billing' },
+];
+
+// ── State ────────────────────────────────────────────────────────────────────
+let weeks = [];
+let weekData = []; // array of {query: {position, impressions, clicks}} per week
+let currentCat = 'all';
+let sortCol = 3;
+let sortAsc = true;
+
+const catLabels = {
+  billing:'Billing', credentialing:'Credentialing', rcm:'RCM',
+  denial:'Denial Mgmt', eligibility:'Eligibility', dental:'Dental',
+  digital:'Digital Mktg', local:'Local SEO'
+};
+
+// ── Date helpers ─────────────────────────────────────────────────────────────
+function fmt(d) { return d.toISOString().split('T')[0]; }
+
+function applyPreset(days, btn) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - days);
+  document.getElementById('startDate').value = fmt(start);
+  document.getElementById('endDate').value = fmt(end);
+}
+
+// ── Fetch from API ───────────────────────────────────────────────────────────
+async function fetchRankings() {
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+  if (!startDate || !endDate) { showStatus('Please select a date range.', 'error'); return; }
+
+  const btn = document.getElementById('updateBtn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('loadingOverlay').classList.add('show');
+  hideStatus();
+
+  try {
+    const url = `/api/rankings?startDate=${startDate}&endDate=${endDate}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    weeks = json.weeks;
+    weekData = json.data;
+
+    renderHead();
+    renderTable();
+    updateStats();
+
+    document.getElementById('headerRange').textContent =
+      `${startDate} → ${endDate}`;
+    document.getElementById('statUpdated').textContent =
+      new Date().toLocaleTimeString();
+    showStatus(`Updated · ${weeks.length} weeks loaded`, 'success');
+  } catch (err) {
+    showStatus('Error: ' + err.message, 'error');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + type;
+}
+function hideStatus() {
+  document.getElementById('statusMsg').className = 'status-msg';
+}
+
+// ── Rendering ────────────────────────────────────────────────────────────────
+function posBadge(val) {
+  if (val == null) return '<span class="pos-badge pos-none">—</span>';
+  const cls = val <= 3 ? 'pos-top3' : val <= 10 ? 'pos-top10' :
+              val <= 20 ? 'pos-top20' : val <= 50 ? 'pos-top50' : 'pos-top100';
+  return `<span class="pos-badge ${cls}">${val.toFixed(1)}</span>`;
+}
+
+function trendBadge(curr, prev) {
+  if (curr == null || prev == null) return '<span style="color:#e2e8f0;font-size:11px">—</span>';
+  const diff = prev - curr; // positive = improved (lower = better)
+  if (Math.abs(diff) < 0.5) return '<span class="trend trend-flat">= Flat</span>';
+  if (diff > 0) return `<span class="trend trend-up">↑ +${diff.toFixed(1)}</span>`;
+  return `<span class="trend trend-down">↓ ${diff.toFixed(1)}</span>`;
+}
+
+function renderHead() {
+  const thead = document.getElementById('tableHead');
+  const weekCols = weeks.map((w, i) => `
+    <th onclick="sortTable(${3+i})" class="${sortCol===3+i?'sorted':''}">
+      ${i === 0 ? 'Current Week' : `Week -${i}`}
+      <span class="week-sub">${w.label}</span>
+    </th>`).join('');
+
+  thead.innerHTML = `<tr>
+    <th onclick="sortTable(0)">#</th>
+    <th onclick="sortTable(1)">Keyword</th>
+    <th onclick="sortTable(2)">Category</th>
+    ${weekCols}
+    <th onclick="sortTable(${3+weeks.length})" style="text-align:center">WoW Change</th>
+    <th onclick="sortTable(${4+weeks.length})" style="text-align:right">Impressions</th>
+  </tr>`;
+}
+
+function renderTable() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  let rows = KEYWORDS.filter(r =>
+    (currentCat === 'all' || r.cat === currentCat) &&
+    r.kw.toLowerCase().includes(q)
+  ).map(r => {
+    const kwLower = r.kw.toLowerCase();
+    const positions = weeks.map((_, i) => weekData[i]?.[kwLower]?.position ?? null);
+    const impressions = weeks.reduce((sum, _, i) => sum + (weekData[i]?.[kwLower]?.impressions ?? 0), 0);
+    return { ...r, positions, impressions };
+  });
+
+  // Sort
+  rows.sort((a, b) => {
+    let va, vb;
+    if (sortCol === 0) { va = KEYWORDS.indexOf(KEYWORDS.find(k=>k.kw===a.kw)); vb = KEYWORDS.indexOf(KEYWORDS.find(k=>k.kw===b.kw)); }
+    else if (sortCol === 1) { va = a.kw; vb = b.kw; }
+    else if (sortCol === 2) { va = a.cat; vb = b.cat; }
+    else if (sortCol >= 3 && sortCol < 3 + weeks.length) {
+      va = a.positions[sortCol-3] ?? 999; vb = b.positions[sortCol-3] ?? 999;
+    } else if (sortCol === 3 + weeks.length) {
+      const da = (a.positions[0] != null && a.positions[1] != null) ? a.positions[1] - a.positions[0] : -999;
+      const db = (b.positions[0] != null && b.positions[1] != null) ? b.positions[1] - b.positions[0] : -999;
+      va = da; vb = db;
+    } else { va = a.impressions; vb = b.impressions; }
+    if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortAsc ? va - vb : vb - va;
+  });
+
+  const tbody = document.getElementById('tableBody');
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr class="no-data-row"><td colspan="20">No keywords found</td></tr>';
+  } else {
+    tbody.innerHTML = rows.map((r, i) => {
+      const posCells = r.positions.map(p => `<td style="text-align:center">${posBadge(p)}</td>`).join('');
+      const wow = trendBadge(r.positions[0], r.positions[1]);
+      return `<tr data-cat="${r.cat}">
+        <td style="color:#a0aec0;font-size:10px">${i+1}</td>
+        <td class="kw-cell">${r.kw}</td>
+        <td><span class="cat-badge cat-${r.cat}">${catLabels[r.cat]||r.cat}</span></td>
+        ${posCells}
+        <td style="text-align:center">${wow}</td>
+        <td style="text-align:right;color:#4a5568;font-size:11px">${r.impressions > 0 ? r.impressions.toLocaleString() : '<span style="color:#e2e8f0">—</span>'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('resultsCount').textContent =
+    `Showing ${rows.length} of ${KEYWORDS.length} keywords`;
+}
+
+function updateStats() {
+  const withPos = KEYWORDS.map(k => weekData[0]?.[k.kw.toLowerCase()]?.position ?? null).filter(p => p !== null);
+  document.getElementById('statTop10').textContent = withPos.filter(p => p <= 10).length;
+  document.getElementById('statTop20').textContent = withPos.filter(p => p <= 20).length;
+
+  let improved = 0, declined = 0, noData = 0;
+  KEYWORDS.forEach(k => {
+    const kl = k.kw.toLowerCase();
+    const w1 = weekData[0]?.[kl]?.position ?? null;
+    const w2 = weekData[1]?.[kl]?.position ?? null;
+    if (w1 == null) { noData++; return; }
+    if (w1 != null && w2 != null) {
+      if (w2 - w1 > 0.5) improved++;
+      else if (w1 - w2 > 0.5) declined++;
+    }
+  });
+  document.getElementById('statImproved').textContent = improved;
+  document.getElementById('statDeclined').textContent = declined;
+  document.getElementById('statNoData').textContent = noData;
+}
+
+function setFilter(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function sortTable(col) {
+  sortAsc = sortCol === col ? !sortAsc : true;
+  sortCol = col;
+  document.querySelectorAll('th').forEach((th, i) => th.classList.toggle('sorted', i === col));
+  renderTable();
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  // Default to last 8 weeks
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - 56);
+  document.getElementById('startDate').value = fmt(start);
+  document.getElementById('endDate').value = fmt(end);
+
+  // Render empty table structure
+  const emptyWeeks = [
+    { label: 'Jun 9 – Jun 16' }, { label: 'Jun 2 – Jun 9' },
+    { label: 'May 26 – Jun 2' }, { label: 'May 19 – May 26' }
+  ];
+  weeks = emptyWeeks;
+  weekData = [];
+  renderHead();
+  renderTable();
+  document.getElementById('statTotal').textContent = KEYWORDS.length;
+})();
+</script>
+</body>
+</html>

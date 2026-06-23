@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Traffic Dashboard · Capline Healthcare</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f4f8;color:#1a202c;min-height:100vh}
+.nav{background:#1a1a3e;color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-logo{width:36px;height:36px;background:#e53e3e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.nav-title{font-size:16px;font-weight:700}
+.nav-sub{font-size:11px;color:#a0aec0;margin-top:1px}
+.nav-links{display:flex;gap:8px}
+.nav-link{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;color:#a0aec0;cursor:pointer;border:none;background:none}
+.nav-link.active{background:#2d2d6e;color:#fff}
+.ctrl{background:#fff;padding:14px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.ctrl-label{font-size:12px;font-weight:700;color:#4a5568;white-space:nowrap}
+.ctrl input[type=date]{border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:13px;color:#2d3748;outline:none}
+.ctrl input[type=date]:focus{border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.15)}
+.ctrl-sep{color:#cbd5e0;font-size:13px;font-weight:600}
+.btn{padding:8px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:opacity .15s}
+.btn-load{background:#1a1a3e;color:#fff}
+.btn-load:hover{opacity:.85}
+.btn-load:disabled{opacity:.45;cursor:not-allowed}
+.btn-export{background:#38a169;color:#fff}
+.btn-export:hover{opacity:.85}
+.status{font-size:12px;color:#718096}
+.tbl-outer{padding:20px 24px}
+.tbl-wrap{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:1200px}
+thead tr{background:#1a1a3e}
+thead th{color:#fff;padding:11px 12px;font-size:11px;font-weight:700;text-align:center;white-space:nowrap;border-right:1px solid rgba(255,255,255,.1)}
+thead th:first-child{text-align:center;border-radius:10px 0 0 0}
+thead th:last-child{border-right:none;border-radius:0 10px 0 0}
+thead th.grp-gsc{background:#1e3a5f}
+thead th.grp-ga4{background:#1a3a2e}
+thead th.grp-eng{background:#3d2000}
+thead th.grp-ch{background:#2d1a3e}
+.subhdr{background:#2d2d5e!important}
+.subhdr th{font-size:10px!important;font-weight:600!important;opacity:.85;padding:6px 12px!important}
+tbody tr{border-bottom:1px solid #f0f4f8;transition:background .1s}
+tbody tr:hover{background:#f7f9ff}
+tbody tr.partial-row{background:#fffbeb}
+tbody td{padding:10px 12px;font-size:13px;text-align:center;border-right:1px solid #f0f4f8;color:#2d3748;white-space:nowrap}
+tbody td:last-child{border-right:none}
+tbody td.month-cell{font-weight:700;color:#1a1a3e;text-align:left;padding-left:14px;min-width:80px}
+tbody td.srno{color:#a0aec0;font-size:11px;font-weight:600;width:44px}
+.partial-badge{font-size:9px;background:#f6ad55;color:#7b341e;padding:1px 5px;border-radius:8px;margin-left:4px;font-weight:700}
+.num{font-weight:600;font-variant-numeric:tabular-nums}
+.num-pos{color:#2b6cb0;font-weight:700}
+.num-pct{color:#744210}
+.num-dur{color:#276749}
+.sec-divider{margin:0 24px 20px;padding-top:24px;border-top:2px solid #e2e8f0;display:flex;align-items:center;gap:10px}
+.sec-divider h2{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#2d3748}
+.sec-dot{width:10px;height:10px;border-radius:50%;background:#3182ce}
+.state-box{text-align:center;padding:40px}
+.spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#1a1a3e;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-left">
+    <div class="nav-logo">C</div>
+    <div>
+      <div class="nav-title">Capline Healthcare Management</div>
+      <div class="nav-sub">Traffic Dashboard · GA4 + Google Search Console</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="/index.html">🔑 Keyword Rankings</a>
+    <a class="nav-link active" href="/traffic.html">📊 Traffic Dashboard</a>
+  </div>
+</div>
+
+<!-- ===== SECTION 1: MONTHLY OVERVIEW ===== -->
+<div class="ctrl">
+  <span class="ctrl-label">Date Range:</span>
+  <input type="date" id="startDate">
+  <span class="ctrl-sep">→</span>
+  <input type="date" id="endDate">
+  <button class="btn btn-load" id="loadBtn" onclick="doFetch()">▶ Load Data</button>
+  <button class="btn btn-export hidden" id="exportBtn" onclick="exportCSV()">⬇ Export CSV</button>
+  <span class="status" id="statusTxt"></span>
+</div>
+
+<div class="tbl-outer">
+  <div id="loadingBox" style="display:none" class="state-box"><div class="spinner"></div><div style="font-size:13px;color:#718096">Fetching data…</div></div>
+  <div id="errorBox" class="hidden state-box"><div style="font-size:13px;color:#c53030;background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;padding:14px 20px;display:inline-block" id="errorMsg"></div></div>
+  <div id="emptyBox" class="state-box"><div style="font-size:14px;color:#718096">Select a date range above and click <strong>Load Data</strong></div></div>
+  <div class="tbl-wrap hidden" id="tblWrap">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:44px">Sr No.</th>
+          <th rowspan="2" style="text-align:left;min-width:80px">Month</th>
+          <th colspan="3" class="grp-gsc">Google Search Console</th>
+          <th colspan="6" class="grp-ga4">GA4 — Users &amp; Engagement</th>
+          <th colspan="4" class="grp-ch">Traffic by Channel (Sessions)</th>
+          <th rowspan="2" style="background:#1a2e1a;white-space:nowrap">GMB<br>Interaction</th>
+        </tr>
+        <tr class="subhdr">
+          <th class="grp-gsc">Organic Clicks</th><th class="grp-gsc">Impressions</th><th class="grp-gsc">Avg Position</th>
+          <th class="grp-ga4">Users</th><th class="grp-ga4">New Visitors</th><th class="grp-ga4">Returning Visitor</th><th class="grp-ga4">Key Events</th>
+          <th class="grp-eng">Avg Session Duration</th><th class="grp-eng">Bounce Rate</th>
+          <th class="grp-ch">Organic Traffic</th><th class="grp-ch">Direct Traffic</th><th class="grp-ch">Social</th><th class="grp-ch">Referral</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: GSC COMPARISON ===== -->
+<div class="sec-divider">
+  <div class="sec-dot"></div>
+  <h2>GSC Month over Month Comparison</h2>
+</div>
+
+<div style="padding:0 24px 32px">
+  <!-- Controls -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;font-weight:700;color:#3182ce;background:#ebf8ff;padding:3px 8px;border-radius:4px;text-transform:uppercase">Current</span>
+      <input type="date" id="cmpStart" style="border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none">
+      <span style="color:#a0aec0">→</span>
+      <input type="date" id="cmpEnd" style="border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none">
+    </div>
+    <span style="color:#cbd5e0;font-weight:700;font-size:14px">vs</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;font-weight:700;color:#718096;background:#f7fafc;padding:3px 8px;border-radius:4px;border:1px solid #e2e8f0;text-transform:uppercase">Previous</span>
+      <input type="date" id="cmpPrevStart" style="border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none">
+      <span style="color:#a0aec0">→</span>
+      <input type="date" id="cmpPrevEnd" style="border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none">
+    </div>
+    <button onclick="loadComparison()" id="cmpBtn" style="background:#1a1a3e;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">▶ Compare</button>
+    <button onclick="exportCmpCSV()" id="cmpExportBtn" class="hidden" style="background:#38a169;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">⬇ Export CSV</button>
+    <span id="cmpStatus" style="font-size:12px;color:#718096"></span>
+  </div>
+
+  <!-- Filters -->
+  <div id="cmpFilters" class="hidden" style="margin-bottom:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <label style="font-size:12px;font-weight:600;color:#4a5568;cursor:pointer"><input type="checkbox" id="filterDrops" onchange="renderCmp()"> Show only pages with drops</label>
+    <label style="font-size:12px;font-weight:600;color:#4a5568;cursor:pointer"><input type="checkbox" id="filterSugs" onchange="renderCmp()"> Show only pages with suggestions</label>
+    <input type="text" id="cmpSearch" oninput="renderCmp()" placeholder="Search pages…" style="border:1px solid #e2e8f0;border-radius:6px;padding:5px 10px;font-size:12px;outline:none;width:200px">
+    <span id="cmpCount" style="font-size:12px;color:#718096"></span>
+  </div>
+
+  <!-- Loading / Error -->
+  <div id="cmpLoading" class="hidden state-box"><div class="spinner"></div><div style="font-size:13px;color:#718096;margin-top:8px">Fetching page-level GSC data…</div></div>
+  <div id="cmpError" class="hidden" style="background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;padding:14px 20px;color:#c53030;font-size:13px;margin-bottom:12px"></div>
+
+  <!-- Comparison Table -->
+  <div id="cmpTblWrap" class="hidden" style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:1100px">
+      <thead>
+        <tr style="background:#1a1a3e">
+          <th style="color:#fff;padding:11px 14px;font-size:11px;font-weight:700;text-align:left;border-radius:10px 0 0 0;min-width:200px">Page URL</th>
+          <th colspan="3" style="color:#fff;padding:11px 12px;font-size:11px;font-weight:700;text-align:center;background:#1e3a5f;border-left:2px solid rgba(255,255,255,.1)">Clicks</th>
+          <th colspan="3" style="color:#fff;padding:11px 12px;font-size:11px;font-weight:700;text-align:center;background:#1a3a2e;border-left:2px solid rgba(255,255,255,.1)">Impressions</th>
+          <th colspan="3" style="color:#fff;padding:11px 12px;font-size:11px;font-weight:700;text-align:center;background:#3d2000;border-left:2px solid rgba(255,255,255,.1)">Avg Position</th>
+          <th colspan="3" style="color:#fff;padding:11px 12px;font-size:11px;font-weight:700;text-align:center;background:#2d1a3e;border-left:2px solid rgba(255,255,255,.1)">CTR %</th>
+          <th style="color:#fff;padding:11px 12px;font-size:11px;font-weight:700;text-align:center;background:#1a2e1a;border-left:2px solid rgba(255,255,255,.1);border-radius:0 10px 0 0;min-width:220px">Suggestion</th>
+        </tr>
+        <tr style="background:#2d2d5e">
+          <th style="color:#a0aec0;padding:7px 14px;font-size:10px;text-align:left"></th>
+          <th style="color:#90cdf4;padding:7px 10px;font-size:10px;font-weight:600;border-left:2px solid rgba(255,255,255,.08)">Current</th>
+          <th style="color:#90cdf4;padding:7px 10px;font-size:10px;font-weight:600">Previous</th>
+          <th style="color:#90cdf4;padding:7px 10px;font-size:10px;font-weight:600">Δ</th>
+          <th style="color:#9ae6b4;padding:7px 10px;font-size:10px;font-weight:600;border-left:2px solid rgba(255,255,255,.08)">Current</th>
+          <th style="color:#9ae6b4;padding:7px 10px;font-size:10px;font-weight:600">Previous</th>
+          <th style="color:#9ae6b4;padding:7px 10px;font-size:10px;font-weight:600">Δ</th>
+          <th style="color:#fbd38d;padding:7px 10px;font-size:10px;font-weight:600;border-left:2px solid rgba(255,255,255,.08)">Current</th>
+          <th style="color:#fbd38d;padding:7px 10px;font-size:10px;font-weight:600">Previous</th>
+          <th style="color:#fbd38d;padding:7px 10px;font-size:10px;font-weight:600">Δ</th>
+          <th style="color:#d6bcfa;padding:7px 10px;font-size:10px;font-weight:600;border-left:2px solid rgba(255,255,255,.08)">Current</th>
+          <th style="color:#d6bcfa;padding:7px 10px;font-size:10px;font-weight:600">Previous</th>
+          <th style="color:#d6bcfa;padding:7px 10px;font-size:10px;font-weight:600">Δ</th>
+          <th style="color:#9ae6b4;padding:7px 10px;font-size:10px;font-weight:600;border-left:2px solid rgba(255,255,255,.08)">Action Required</th>
+        </tr>
+      </thead>
+      <tbody id="cmpTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+var _rows=[], _cmpRows=[];
+
+function n(v){ return v!=null ? Number(v).toLocaleString() : '—'; }
+function dur(s){ if(!s&&s!==0)return '—'; var m=Math.floor(s/60),sec=Math.round(s%60); return m===0?sec+'s':m+'m '+String(sec).padStart(2,'0')+'s'; }
+function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+// Default main dates
+(function(){
+  var now=new Date();
+  var end=new Date(now.getFullYear(),now.getMonth(),now.getDate()-1);
+  var start=new Date(now.getFullYear(),now.getMonth()-5,1);
+  document.getElementById('startDate').value=fmt(start);
+  document.getElementById('endDate').value=fmt(end);
+})();
+
+// Default comparison dates (last full month vs month before)
+(function(){
+  var now=new Date(); var y=now.getFullYear(),m=now.getMonth();
+  var cE=new Date(Date.UTC(y,m,0)), cS=new Date(Date.UTC(y,m-1,1));
+  var pE=new Date(Date.UTC(y,m-1,0)), pS=new Date(Date.UTC(y,m-2,1));
+  function f(d){return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+  document.getElementById('cmpStart').value=f(cS);
+  document.getElementById('cmpEnd').value=f(cE);
+  document.getElementById('cmpPrevStart').value=f(pS);
+  document.getElementById('cmpPrevEnd').value=f(pE);
+})();
+
+async function doFetch(){
+  var s=document.getElementById('startDate').value, e=document.getElementById('endDate').value;
+  if(!s||!e){alert('Select a date range.');return;}
+  var btn=document.getElementById('loadBtn');
+  btn.disabled=true; btn.textContent='⏳ Loading…';
+  document.getElementById('loadingBox').style.display='block';
+  document.getElementById('emptyBox').classList.add('hidden');
+  document.getElementById('tblWrap').classList.add('hidden');
+  document.getElementById('errorBox').classList.add('hidden');
+  document.getElementById('exportBtn').classList.add('hidden');
+  document.getElementById('statusTxt').textContent='';
+  try {
+    var resp=await fetch('/api/traffic?startDate='+s+'&endDate='+e);
+    var json=await resp.json();
+    if(!resp.ok||json.error) throw new Error(json.error||'API error '+resp.status);
+    _rows=json.rows||[];
+    renderTable(_rows);
+    document.getElementById('tblWrap').classList.remove('hidden');
+    document.getElementById('exportBtn').classList.remove('hidden');
+    document.getElementById('statusTxt').textContent='✓ '+_rows.length+' months loaded';
+  } catch(e2){
+    document.getElementById('errorBox').classList.remove('hidden');
+    document.getElementById('errorMsg').textContent='⚠️ '+e2.message;
+  } finally {
+    document.getElementById('loadingBox').style.display='none';
+    btn.disabled=false; btn.textContent='▶ Load Data';
+  }
+}
+
+function renderTable(rows){
+  var tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  rows.forEach(function(r,i){
+    var g=r.gsc||{},a=r.ga4||{},c=r.channels||{};
+    var tr=document.createElement('tr');
+    if(r.partial) tr.className='partial-row';
+    tr.innerHTML=
+      '<td class="srno">'+(i+1)+'</td>'+
+      '<td class="month-cell">'+r.month+(r.partial?'<span class="partial-badge">PARTIAL</span>':'')+'</td>'+
+      '<td class="num">'+n(g.clicks)+'</td>'+
+      '<td class="num">'+n(g.impressions)+'</td>'+
+      '<td class="num num-pos">'+(g.position||'—')+'</td>'+
+      '<td class="num">'+n(a.users)+'</td>'+
+      '<td class="num">'+n(a.newUsers)+'</td>'+
+      '<td class="num">'+n(a.returningUsers)+'</td>'+
+      '<td class="num">'+n(a.keyEvents)+'</td>'+
+      '<td class="num num-dur">'+dur(a.avgDuration)+'</td>'+
+      '<td class="num num-pct">'+(a.bounceRate!=null?a.bounceRate+'%':'—')+'</td>'+
+      '<td class="num">'+n(c.organic)+'</td>'+
+      '<td class="num">'+n(c.direct)+'</td>'+
+      '<td class="num">'+n(c.social)+'</td>'+
+      '<td class="num">'+n(c.referral)+'</td>'+
+      '<td class="num" style="color:#276749;font-weight:700">'+n(r.gmb)+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function exportCSV(){
+  var cols=['Sr No.','Month','Organic Clicks','Impressions','Avg Position','Users','New Visitors','Returning Visitor','Key Events','Avg Session Duration (s)','Bounce Rate %','Organic Traffic','Direct Traffic','Social','Referral','GMB Interaction'];
+  var lines=[cols.join(',')];
+  _rows.forEach(function(r,i){
+    var g=r.gsc||{},a=r.ga4||{},c=r.channels||{};
+    lines.push([i+1,r.month+(r.partial?' (partial)':''),g.clicks||0,g.impressions||0,g.position||0,a.users||0,a.newUsers||0,a.returningUsers||0,a.keyEvents||0,a.avgDuration||0,a.bounceRate||0,c.organic||0,c.direct||0,c.social||0,c.referral||0,r.gmb||0].join(','));
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='capline-traffic-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+
+// ===== COMPARISON =====
+async function loadComparison(){
+  var s=document.getElementById('cmpStart').value, e=document.getElementById('cmpEnd').value;
+  var ps=document.getElementById('cmpPrevStart').value, pe=document.getElementById('cmpPrevEnd').value;
+  if(!s||!e||!ps||!pe){alert('Please fill in all 4 dates.');return;}
+  var btn=document.getElementById('cmpBtn');
+  btn.disabled=true; btn.textContent='⏳ Loading…';
+  document.getElementById('cmpLoading').classList.remove('hidden');
+  document.getElementById('cmpTblWrap').classList.add('hidden');
+  document.getElementById('cmpError').classList.add('hidden');
+  document.getElementById('cmpExportBtn').classList.add('hidden');
+  document.getElementById('cmpFilters').classList.add('hidden');
+  document.getElementById('cmpStatus').textContent='';
+  try {
+    var url='/api/gsc-compare?startDate='+s+'&endDate='+e+'&prevStart='+ps+'&prevEnd='+pe;
+    var resp=await fetch(url);
+    var json=await resp.json();
+    if(!resp.ok||json.error) throw new Error(json.error||'API error '+resp.status);
+    _cmpRows=json.rows||[];
+    renderCmp();
+    document.getElementById('cmpTblWrap').classList.remove('hidden');
+    document.getElementById('cmpExportBtn').classList.remove('hidden');
+    document.getElementById('cmpFilters').classList.remove('hidden');
+    document.getElementById('cmpStatus').textContent='✓ '+_cmpRows.length+' pages compared';
+  } catch(err){
+    document.getElementById('cmpError').classList.remove('hidden');
+    document.getElementById('cmpError').textContent='⚠️ '+err.message;
+  } finally {
+    document.getElementById('cmpLoading').classList.add('hidden');
+    btn.disabled=false; btn.textContent='▶ Compare';
+  }
+}
+
+function renderCmp(){
+  var onlyDrops=document.getElementById('filterDrops').checked;
+  var onlySugs=document.getElementById('filterSugs').checked;
+  var search=(document.getElementById('cmpSearch').value||'').toLowerCase();
+  var rows=_cmpRows.filter(function(r){
+    if(search&&r.page.toLowerCase().indexOf(search)<0) return false;
+    if(onlyDrops&&!(r.clickDelta<0||r.impDelta<0||r.posDelta>0)) return false;
+    if(onlySugs&&!r.suggestion) return false;
+    return true;
+  });
+  document.getElementById('cmpCount').textContent='Showing '+rows.length+' of '+_cmpRows.length+' pages';
+  var tbody=document.getElementById('cmpTbody');
+  tbody.innerHTML='';
+  rows.forEach(function(r){
+    var c=r.curr||{}, p=r.prev||{};
+    function cell(v){return '<td style="text-align:center;font-size:12px;font-weight:600;color:#2d3748;padding:9px 10px">'+(v!=null?Number(v).toLocaleString():'—')+'</td>';}
+    function delta(val,lowerBetter){
+      if(val==null) return '<td style="text-align:center;color:#a0aec0;font-size:12px;padding:9px 10px">—</td>';
+      var good=lowerBetter?val<0:val>0;
+      var col=val===0?'#718096':(good?'#276749':'#c53030');
+      var bg=val===0?'transparent':(good?'rgba(56,161,105,.08)':'rgba(197,48,48,.08)');
+      return '<td style="text-align:center;background:'+bg+';color:'+col+';font-size:12px;font-weight:700;padding:9px 10px">'+(val>0?'▲ +':'▼ ')+val+'</td>';
+    }
+    var hasDrop=r.clickDelta<0||r.impDelta<0||r.posDelta>0;
+    var tr=document.createElement('tr');
+    tr.style.background=hasDrop?'#fffbf0':'#fff';
+    tr.style.borderBottom='1px solid #f0f4f8';
+    tr.innerHTML=
+      '<td style="font-size:11px;font-weight:600;color:#2d3748;padding:9px 14px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.page+'">'+
+        '<a href="https://www.caplinehealthcaremanagement.com'+r.page+'" target="_blank" style="color:inherit;text-decoration:none">'+r.page+'</a></td>'+
+      cell(c.clicks)+cell(p.clicks)+delta(r.clickDelta,false)+
+      cell(c.impressions)+cell(p.impressions)+delta(r.impDelta,false)+
+      '<td style="text-align:center;font-size:12px;font-weight:700;color:#2b6cb0;padding:9px 10px">'+(c.position||'—')+'</td>'+
+      '<td style="text-align:center;font-size:12px;font-weight:700;color:#2b6cb0;padding:9px 10px">'+(p.position||'—')+'</td>'+
+      delta(r.posDelta,true)+
+      '<td style="text-align:center;font-size:12px;font-weight:600;color:#744210;padding:9px 10px">'+(c.ctr!=null?c.ctr+'%':'—')+'</td>'+
+      '<td style="text-align:center;font-size:12px;font-weight:600;color:#744210;padding:9px 10px">'+(p.ctr!=null?p.ctr+'%':'—')+'</td>'+
+      delta(r.ctrDelta,false)+
+      (r.suggestion
+        ? '<td style="font-size:11px;color:#744210;background:#fffbeb;padding:9px 12px;line-height:1.5">💡 '+r.suggestion+'</td>'
+        : '<td style="text-align:center;color:#a0aec0;font-size:11px;padding:9px 10px">✓ Stable</td>');
+    tbody.appendChild(tr);
+  });
+}
+
+function exportCmpCSV(){
+  var cols=['Page','Clicks (Curr)','Clicks (Prev)','Clicks Δ','Impressions (Curr)','Impressions (Prev)','Impressions Δ','Position (Curr)','Position (Prev)','Position Δ','CTR (Curr)','CTR (Prev)','CTR Δ','Suggestion'];
+  var lines=[cols.join(',')];
+  _cmpRows.forEach(function(r){
+    var c=r.curr||{},p=r.prev||{};
+    lines.push(['"'+r.page+'"',c.clicks||0,p.clicks||0,r.clickDelta||0,c.impressions||0,p.impressions||0,r.impDelta||0,c.position||0,p.position||0,r.posDelta||0,c.ctr||0,p.ctr||0,r.ctrDelta||0,'"'+(r.suggestion||'').replace(/"/g,"'")+'"'].join(','));
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='gsc-comparison-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+</script>
+</body>
+</html>
