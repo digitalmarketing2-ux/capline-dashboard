@@ -6,6 +6,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// --- Decode base64-encoded credentials if stored encoded ---
+if (process.env.GOOGLE_CREDENTIALS_JSON && !process.env.GOOGLE_CREDENTIALS_JSON.trim().startsWith('{')) {
+  process.env.GOOGLE_CREDENTIALS_JSON = Buffer.from(process.env.GOOGLE_CREDENTIALS_JSON, 'base64').toString('utf8');
+}
+
 // --- Auth config (set these in DigitalOcean environment variables) ---
 const DASH_USER = process.env.DASH_USER || 'admin';
 const DASH_PASS = process.env.DASH_PASS || 'capline2024';
