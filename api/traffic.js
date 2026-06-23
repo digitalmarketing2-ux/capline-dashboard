@@ -163,6 +163,26 @@ async function fetchGa4Totals(token, month) {
   }
 }
 
+async function fetchGa4ReturningUsers(token, month) {
+  try {
+    var data = await apiPost(
+      'analyticsdata.googleapis.com',
+      '/v1beta/properties/' + GA4_PROPERTY_ID + ':runReport',
+      token,
+      {
+        dateRanges: [{ startDate: month.start, endDate: month.end }],
+        dimensions: [{ name: 'newVsReturning' }],
+        metrics: [{ name: 'totalUsers' }],
+      }
+    );
+    var rows = data.rows || [];
+    var ret = rows.find(function(r) { return r.dimensionValues[0].value === 'returning'; });
+    return ret ? Math.round(parseFloat(ret.metricValues[0].value)) : 0;
+  } catch(e) {
+    return 0;
+  }
+}
+
 async function fetchGa4Channels(token, month) {
   try {
     var data = await apiPost(
@@ -261,12 +281,15 @@ module.exports = async function handler(req, res) {
         fetchGa4Totals(token, month),
         fetchGa4Channels(token, month),
         hasManualGmb ? Promise.resolve(gmbManualData[monthKey]) : fetchGa4Gmb(token, month),
+        fetchGa4ReturningUsers(token, month),
       ]);
+      var ga4 = results[1];
+      ga4.returningUsers = results[4];
       return {
         month: month.label,
         partial: month.partial,
         gsc: results[0],
-        ga4: results[1],
+        ga4: ga4,
         channels: results[2],
         gmb: results[3],
       };
