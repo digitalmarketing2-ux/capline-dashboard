@@ -69,8 +69,13 @@ app.get('/logout', function(req, res) {
 // --- Apply auth to all routes ---
 app.use(authMiddleware);
 
+// --- Redirect root to traffic dashboard ---
+app.get('/', function(req, res) {
+  res.redirect('/traffic.html');
+});
+
 // --- Serve static HTML files ---
-app.use(express.static(path.join(__dirname), { index: 'index.html' }));
+app.use(express.static(path.join(__dirname), { index: false }));
 
 // --- API routes ---
 var apis = [
