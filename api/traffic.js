@@ -136,6 +136,7 @@ async function fetchGa4Totals(token, month) {
         metrics: [
           { name: 'totalUsers' },
           { name: 'newUsers' },
+          { name: 'returningUsers' },
           { name: 'keyEvents' },
           { name: 'averageSessionDuration' },
           { name: 'bounceRate' },
@@ -148,14 +149,15 @@ async function fetchGa4Totals(token, month) {
     var mv = row.metricValues;
     var users = Math.round(parseFloat(mv[0].value));
     var newU = Math.round(parseFloat(mv[1].value));
+    var retU = Math.round(parseFloat(mv[2].value));
     return {
       users: users,
       newUsers: newU,
-      returningUsers: Math.max(0, users - newU),
-      keyEvents: Math.round(parseFloat(mv[2].value)),
-      avgDuration: Math.round(parseFloat(mv[3].value)),
-      bounceRate: Math.round(parseFloat(mv[4].value) * 1000) / 10,
-      sessions: Math.round(parseFloat(mv[5].value)),
+      returningUsers: retU,
+      keyEvents: Math.round(parseFloat(mv[3].value)),
+      avgDuration: Math.round(parseFloat(mv[4].value)),
+      bounceRate: Math.round(parseFloat(mv[5].value) * 1000) / 10,
+      sessions: Math.round(parseFloat(mv[6].value)),
     };
   } catch (e) {
     console.error('GA4 error', month.start, e.message);
