@@ -103,9 +103,9 @@ function getMonths(startDate, endDate) {
   return months.reverse();
 }
 
-async function fetchGscTotals(token, month) {
+async function fetchGscTotals(token, month, siteUrl) {
   try {
-    var siteEncoded = encodeURIComponent(SITE_URL);
+    var siteEncoded = encodeURIComponent(siteUrl || SITE_URL);
     var data = await apiPost(
       'searchconsole.googleapis.com',
       '/webmasters/v3/sites/' + siteEncoded + '/searchAnalytics/query',
@@ -125,11 +125,11 @@ async function fetchGscTotals(token, month) {
   }
 }
 
-async function fetchGa4Totals(token, month) {
+async function fetchGa4Totals(token, month, propertyId) {
   try {
     var data = await apiPost(
       'analyticsdata.googleapis.com',
-      '/v1beta/properties/' + GA4_PROPERTY_ID + ':runReport',
+      '/v1beta/properties/' + (propertyId || GA4_PROPERTY_ID) + ':runReport',
       token,
       {
         dateRanges: [{ startDate: month.start, endDate: month.end }],
@@ -163,11 +163,11 @@ async function fetchGa4Totals(token, month) {
   }
 }
 
-async function fetchGa4ReturningUsers(token, month) {
+async function fetchGa4ReturningUsers(token, month, propertyId) {
   try {
     var data = await apiPost(
       'analyticsdata.googleapis.com',
-      '/v1beta/properties/' + GA4_PROPERTY_ID + ':runReport',
+      '/v1beta/properties/' + (propertyId || GA4_PROPERTY_ID) + ':runReport',
       token,
       {
         dateRanges: [{ startDate: month.start, endDate: month.end }],
@@ -183,11 +183,11 @@ async function fetchGa4ReturningUsers(token, month) {
   }
 }
 
-async function fetchGa4Channels(token, month) {
+async function fetchGa4Channels(token, month, propertyId) {
   try {
     var data = await apiPost(
       'analyticsdata.googleapis.com',
-      '/v1beta/properties/' + GA4_PROPERTY_ID + ':runReport',
+      '/v1beta/properties/' + (propertyId || GA4_PROPERTY_ID) + ':runReport',
       token,
       {
         dateRanges: [{ startDate: month.start, endDate: month.end }],
@@ -213,11 +213,8 @@ async function fetchGa4Channels(token, month) {
   }
 }
 
-async function fetchGa4Gmb(token, month) {
+async function fetchGa4Gmb(token, month, propertyId) {
   try {
-    // GA4 "Business Profile Interactions" = all events from GMB sessions
-    // EXCLUDING standard automatic GA4 events (page_view, user_engagement, scroll, etc.)
-    // Matches GA4 > Reports > Business Profile > Overview > Business Profile Interactions
     var AUTO_EVENTS = [
       'page_view', 'user_engagement', 'scroll', 'click',
       'file_download', 'view_search_results',
@@ -225,7 +222,7 @@ async function fetchGa4Gmb(token, month) {
     ];
     var data = await apiPost(
       'analyticsdata.googleapis.com',
-      '/v1beta/properties/' + GA4_PROPERTY_ID + ':runReport',
+      '/v1beta/properties/' + (propertyId || GA4_PROPERTY_ID) + ':runReport',
       token,
       {
         dateRanges: [{ startDate: month.start, endDate: month.end }],
@@ -266,22 +263,26 @@ module.exports = async function handler(req, res) {
   if (!startDate || !endDate)
     return res.status(400).json({ error: 'startDate and endDate required' });
 
+  var pid = req.query.propertyId || GA4_PROPERTY_ID;
+  var site = req.query.siteUrl ? decodeURIComponent(req.query.siteUrl) : SITE_URL;
+  var isMainSite = (pid === GA4_PROPERTY_ID);
+
   try {
     var creds = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
     var token = await getToken(creds);
     var months = getMonths(startDate, endDate);
 
     var rows = await Promise.all(months.map(async function(month) {
-      // Check for manual GMB data first (exact numbers from GA4 Business Profile report)
       var monthKey = month.start.slice(0, 7); // "YYYY-MM"
-      var hasManualGmb = gmbManualData.hasOwnProperty(monthKey) && gmbManualData[monthKey] > 0;
+      // Only use manual GMB data for the main site
+      var hasManualGmb = isMainSite && gmbManualData.hasOwnProperty(monthKey) && gmbManualData[monthKey] > 0;
 
       var results = await Promise.all([
-        fetchGscTotals(token, month),
-        fetchGa4Totals(token, month),
-        fetchGa4Channels(token, month),
-        hasManualGmb ? Promise.resolve(gmbManualData[monthKey]) : fetchGa4Gmb(token, month),
-        fetchGa4ReturningUsers(token, month),
+        fetchGscTotals(token, month, site),
+        fetchGa4Totals(token, month, pid),
+        fetchGa4Channels(token, month, pid),
+        hasManualGmb ? Promise.resolve(gmbManualData[monthKey]) : fetchGa4Gmb(token, month, pid),
+        fetchGa4ReturningUsers(token, month, pid),
       ]);
       var ga4 = results[1];
       ga4.returningUsers = results[4];

@@ -88,7 +88,12 @@ tbody td.srno{color:#a0aec0;font-size:11px;font-weight:600;width:44px}
   <span class="status" id="statusTxt"></span>
 </div>
 
-<div class="tbl-outer">
+<div class="sec-divider" style="margin-top:8px">
+  <div class="sec-dot" style="background:#3182ce"></div>
+  <h2>Capline Healthcare Management</h2>
+  <span style="font-size:11px;color:#718096;margin-left:8px">caplinehealthcaremanagement.com</span>
+</div>
+<div class="tbl-outer" style="padding-top:0">
   <div id="loadingBox" style="display:none" class="state-box"><div class="spinner"></div><div style="font-size:13px;color:#718096">Fetching data…</div></div>
   <div id="errorBox" class="hidden state-box"><div style="font-size:13px;color:#c53030;background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;padding:14px 20px;display:inline-block" id="errorMsg"></div></div>
   <div id="emptyBox" class="state-box"><div style="font-size:14px;color:#718096">Select a date range above and click <strong>Load Data</strong></div></div>
@@ -115,7 +120,75 @@ tbody td.srno{color:#a0aec0;font-size:11px;font-weight:600;width:44px}
   </div>
 </div>
 
-<!-- ===== SECTION 2: GSC COMPARISON ===== -->
+<!-- ===== SECTION 2: CAPLINE DENTAL SERVICES ===== -->
+<div class="sec-divider">
+  <div class="sec-dot" style="background:#dd6b20"></div>
+  <h2>Capline Dental Services</h2>
+  <span style="font-size:11px;color:#718096;margin-left:8px">caplinedentalservices.com</span>
+  <button class="btn btn-export hidden" id="exportBtnD" onclick="exportCSVSite('dental')" style="margin-left:auto">⬇ Export CSV</button>
+</div>
+<div class="tbl-outer" style="padding-top:0">
+  <div id="loadingBoxD" style="display:none" class="state-box"><div class="spinner"></div><div style="font-size:13px;color:#718096">Fetching data…</div></div>
+  <div id="errorBoxD" class="hidden state-box"><div style="font-size:13px;color:#c53030;background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;padding:14px 20px;display:inline-block" id="errorMsgD"></div></div>
+  <div id="emptyBoxD" class="state-box"><div style="font-size:14px;color:#718096">Select a date range above and click <strong>Load Data</strong></div></div>
+  <div class="tbl-wrap hidden" id="tblWrapD">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:44px">Sr No.</th>
+          <th rowspan="2" style="text-align:left;min-width:80px">Month</th>
+          <th colspan="3" class="grp-gsc">Google Search Console</th>
+          <th colspan="6" class="grp-ga4">GA4 — Users &amp; Engagement</th>
+          <th colspan="4" class="grp-ch">Traffic by Channel (Sessions)</th>
+          <th rowspan="2" style="background:#1a2e1a;white-space:nowrap">GMB<br>Interaction</th>
+        </tr>
+        <tr class="subhdr">
+          <th class="grp-gsc">Organic Clicks</th><th class="grp-gsc">Impressions</th><th class="grp-gsc">Avg Position</th>
+          <th class="grp-ga4">Users</th><th class="grp-ga4">New Visitors</th><th class="grp-ga4">Returning Visitor</th><th class="grp-ga4">Key Events</th>
+          <th class="grp-eng">Avg Session Duration</th><th class="grp-eng">Bounce Rate</th>
+          <th class="grp-ch">Organic Traffic</th><th class="grp-ch">Direct Traffic</th><th class="grp-ch">Social</th><th class="grp-ch">Referral</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyD"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: CAPLINE HEALTHCARE STAFFING ===== -->
+<div class="sec-divider">
+  <div class="sec-dot" style="background:#6b46c1"></div>
+  <h2>Capline Healthcare Staffing</h2>
+  <span style="font-size:11px;color:#718096;margin-left:8px">caplinehealthcarestaffing.com</span>
+  <button class="btn btn-export hidden" id="exportBtnS" onclick="exportCSVSite('staffing')" style="margin-left:auto">⬇ Export CSV</button>
+</div>
+<div class="tbl-outer" style="padding-top:0">
+  <div id="loadingBoxS" style="display:none" class="state-box"><div class="spinner"></div><div style="font-size:13px;color:#718096">Fetching data…</div></div>
+  <div id="errorBoxS" class="hidden state-box"><div style="font-size:13px;color:#c53030;background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;padding:14px 20px;display:inline-block" id="errorMsgS"></div></div>
+  <div id="emptyBoxS" class="state-box"><div style="font-size:14px;color:#718096">Select a date range above and click <strong>Load Data</strong></div></div>
+  <div class="tbl-wrap hidden" id="tblWrapS">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:44px">Sr No.</th>
+          <th rowspan="2" style="text-align:left;min-width:80px">Month</th>
+          <th colspan="3" class="grp-gsc">Google Search Console</th>
+          <th colspan="6" class="grp-ga4">GA4 — Users &amp; Engagement</th>
+          <th colspan="4" class="grp-ch">Traffic by Channel (Sessions)</th>
+          <th rowspan="2" style="background:#1a2e1a;white-space:nowrap">GMB<br>Interaction</th>
+        </tr>
+        <tr class="subhdr">
+          <th class="grp-gsc">Organic Clicks</th><th class="grp-gsc">Impressions</th><th class="grp-gsc">Avg Position</th>
+          <th class="grp-ga4">Users</th><th class="grp-ga4">New Visitors</th><th class="grp-ga4">Returning Visitor</th><th class="grp-ga4">Key Events</th>
+          <th class="grp-eng">Avg Session Duration</th><th class="grp-eng">Bounce Rate</th>
+          <th class="grp-ch">Organic Traffic</th><th class="grp-ch">Direct Traffic</th><th class="grp-ch">Social</th><th class="grp-ch">Referral</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyS"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: GSC COMPARISON ===== -->
 <div class="sec-divider">
   <div class="sec-dot"></div>
   <h2>GSC Month over Month Comparison</h2>
@@ -189,7 +262,7 @@ tbody td.srno{color:#a0aec0;font-size:11px;font-weight:600;width:44px}
 </div>
 
 <script>
-var _rows=[], _cmpRows=[];
+var _rows=[], _rowsD=[], _rowsS=[], _cmpRows=[];
 
 function n(v){ return v!=null ? Number(v).toLocaleString() : '—'; }
 function dur(s){ if(!s&&s!==0)return '—'; var m=Math.floor(s/60),sec=Math.round(s%60); return m===0?sec+'s':m+'m '+String(sec).padStart(2,'0')+'s'; }
@@ -221,32 +294,63 @@ async function doFetch(){
   if(!s||!e){alert('Select a date range.');return;}
   var btn=document.getElementById('loadBtn');
   btn.disabled=true; btn.textContent='⏳ Loading…';
-  document.getElementById('loadingBox').style.display='block';
-  document.getElementById('emptyBox').classList.add('hidden');
-  document.getElementById('tblWrap').classList.add('hidden');
-  document.getElementById('errorBox').classList.add('hidden');
+  // Show loaders, hide previous results for all 3 sites
+  [['',''],['D','D'],['S','S']].forEach(function(x){
+    var id=x[0];
+    document.getElementById('loadingBox'+id).style.display='block';
+    document.getElementById('emptyBox'+id).classList.add('hidden');
+    document.getElementById('tblWrap'+id).classList.add('hidden');
+    document.getElementById('errorBox'+id).classList.add('hidden');
+  });
   document.getElementById('exportBtn').classList.add('hidden');
+  document.getElementById('exportBtnD').classList.add('hidden');
+  document.getElementById('exportBtnS').classList.add('hidden');
   document.getElementById('statusTxt').textContent='';
+  var base='/api/traffic?startDate='+s+'&endDate='+e;
   try {
-    var resp=await fetch('/api/traffic?startDate='+s+'&endDate='+e);
-    var json=await resp.json();
-    if(!resp.ok||json.error) throw new Error(json.error||'API error '+resp.status);
+    var [json,jsonD,jsonS]=await Promise.all([
+      fetch(base).then(function(r){return r.json();}),
+      fetch(base+'&propertyId=337669996&siteUrl='+encodeURIComponent('https://www.caplinedentalservices.com/')).then(function(r){return r.json();}),
+      fetch(base+'&propertyId=406346447&siteUrl='+encodeURIComponent('https://caplinehealthcarestaffing.com/')).then(function(r){return r.json();}),
+    ]);
+    // Main site
+    if(json.error) throw new Error(json.error);
     _rows=json.rows||[];
-    renderTable(_rows);
+    renderTable(_rows,'tbody');
     document.getElementById('tblWrap').classList.remove('hidden');
     document.getElementById('exportBtn').classList.remove('hidden');
     document.getElementById('statusTxt').textContent='✓ '+_rows.length+' months loaded';
+    // Dental
+    if(!jsonD.error){
+      _rowsD=jsonD.rows||[];
+      renderTable(_rowsD,'tbodyD');
+      document.getElementById('tblWrapD').classList.remove('hidden');
+      document.getElementById('exportBtnD').classList.remove('hidden');
+    } else {
+      document.getElementById('errorBoxD').classList.remove('hidden');
+      document.getElementById('errorMsgD').textContent='⚠️ Dental: '+jsonD.error;
+    }
+    // Staffing
+    if(!jsonS.error){
+      _rowsS=jsonS.rows||[];
+      renderTable(_rowsS,'tbodyS');
+      document.getElementById('tblWrapS').classList.remove('hidden');
+      document.getElementById('exportBtnS').classList.remove('hidden');
+    } else {
+      document.getElementById('errorBoxS').classList.remove('hidden');
+      document.getElementById('errorMsgS').textContent='⚠️ Staffing: '+jsonS.error;
+    }
   } catch(e2){
     document.getElementById('errorBox').classList.remove('hidden');
     document.getElementById('errorMsg').textContent='⚠️ '+e2.message;
   } finally {
-    document.getElementById('loadingBox').style.display='none';
+    ['','D','S'].forEach(function(id){document.getElementById('loadingBox'+id).style.display='none';});
     btn.disabled=false; btn.textContent='▶ Load Data';
   }
 }
 
-function renderTable(rows){
-  var tbody=document.getElementById('tbody');
+function renderTable(rows, tbodyId){
+  var tbody=document.getElementById(tbodyId||'tbody');
   tbody.innerHTML='';
   rows.forEach(function(r,i){
     var g=r.gsc||{},a=r.ga4||{},c=r.channels||{};
@@ -273,16 +377,19 @@ function renderTable(rows){
   });
 }
 
-function exportCSV(){
+function exportCSV(){ exportCSVSite('main'); }
+function exportCSVSite(which){
+  var rows=which==='dental'?_rowsD:which==='staffing'?_rowsS:_rows;
+  var name=which==='dental'?'dental':which==='staffing'?'staffing':'capline';
   var cols=['Sr No.','Month','Organic Clicks','Impressions','Avg Position','Users','New Visitors','Returning Visitor','Key Events','Avg Session Duration (s)','Bounce Rate %','Organic Traffic','Direct Traffic','Social','Referral','GMB Interaction'];
   var lines=[cols.join(',')];
-  _rows.forEach(function(r,i){
+  rows.forEach(function(r,i){
     var g=r.gsc||{},a=r.ga4||{},c=r.channels||{};
     lines.push([i+1,r.month+(r.partial?' (partial)':''),g.clicks||0,g.impressions||0,g.position||0,a.users||0,a.newUsers||0,a.returningUsers||0,a.keyEvents||0,a.avgDuration||0,a.bounceRate||0,c.organic||0,c.direct||0,c.social||0,c.referral||0,r.gmb||0].join(','));
   });
   var blob=new Blob([lines.join('\n')],{type:'text/csv'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='capline-traffic-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  a.download=name+'-traffic-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
 }
 
 // ===== COMPARISON =====
