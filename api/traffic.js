@@ -6,10 +6,13 @@ const fs = require('fs');
 const SITE_URL = 'https://www.caplinehealthcaremanagement.com/';
 const GA4_PROPERTY_ID = '320415425';
 
-// Load manual GMB data from config file (exact numbers from GA4 Business Profile report)
-var gmbDataPath = path.join(__dirname, '..', 'gmb-data.json');
+// Load manual GMB data from config files (exact numbers from GA4 Business Profile report)
 var gmbManualData = {};
-try { gmbManualData = JSON.parse(fs.readFileSync(gmbDataPath, 'utf8')); } catch(e) {}
+var gmbManualDataDental = {};
+var gmbManualDataStaffing = {};
+try { gmbManualData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'gmb-data.json'), 'utf8')); } catch(e) {}
+try { gmbManualDataDental = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'gmb-data-dental.json'), 'utf8')); } catch(e) {}
+try { gmbManualDataStaffing = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'gmb-data-staffing.json'), 'utf8')); } catch(e) {}
 
 function b64url(input) {
   return Buffer.from(input).toString('base64')
@@ -265,7 +268,8 @@ module.exports = async function handler(req, res) {
 
   var pid = req.query.propertyId || GA4_PROPERTY_ID;
   var site = req.query.siteUrl ? decodeURIComponent(req.query.siteUrl) : SITE_URL;
-  var isMainSite = (pid === GA4_PROPERTY_ID);
+  var manualGmb = pid === '337669996' ? gmbManualDataDental :
+                  pid === '406346447' ? gmbManualDataStaffing : gmbManualData;
 
   try {
     var creds = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
@@ -274,14 +278,13 @@ module.exports = async function handler(req, res) {
 
     var rows = await Promise.all(months.map(async function(month) {
       var monthKey = month.start.slice(0, 7); // "YYYY-MM"
-      // Only use manual GMB data for the main site
-      var hasManualGmb = isMainSite && gmbManualData.hasOwnProperty(monthKey) && gmbManualData[monthKey] > 0;
+      var hasManualGmb = manualGmb.hasOwnProperty(monthKey) && manualGmb[monthKey] > 0;
 
       var results = await Promise.all([
         fetchGscTotals(token, month, site),
         fetchGa4Totals(token, month, pid),
         fetchGa4Channels(token, month, pid),
-        hasManualGmb ? Promise.resolve(gmbManualData[monthKey]) : fetchGa4Gmb(token, month, pid),
+        hasManualGmb ? Promise.resolve(manualGmb[monthKey]) : fetchGa4Gmb(token, month, pid),
         fetchGa4ReturningUsers(token, month, pid),
       ]);
       var ga4 = results[1];
